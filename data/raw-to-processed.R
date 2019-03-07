@@ -1,4 +1,9 @@
-# Useful packages
+##################################
+# ~~**~~ PROCESS RAW DATA ~~**~~ #
+##################################
+
+
+# Import useful packages ---------------------------------------------------------------
 
 library(fs)
 library(stringr)
@@ -7,11 +12,16 @@ library(purrr)
 library(readr)
 library(stringdist)
 
-# Transfer (stata) data and dictionary files to the data/raw directory
+
+# Transfer (stata) data and dictionary files to the data/raw directory -----------------
 
 # fs::dir_ls("think-stats-repo/code/", all = TRUE) %>%
 # 	stringr::str_subset(pattern = "\\.dat|\\.gz|\\.dct|\\.csv$") %>%
 # 	fs::file_copy(new_path = "data/raw/")
+
+
+
+# Data processing ---------------------------------------------------------
 
 # Custom function to turn stata dictionary files (.dct) into tibbles
 
@@ -28,7 +38,6 @@ dct_to_tbl <- function(dct){
 				 number_of_chars = str_extract(number_of_chars, pattern = "\\d+") %>% as.integer,
 				 description = str_replace_all(description, pattern = '\\\"', replacement = ""))
 }
-
 
 # list() of all dictionaries + individual dictionary saved to .rda files in the processed folder
 
