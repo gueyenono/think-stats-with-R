@@ -39,7 +39,7 @@ table(fempreg2002$birthwgt_lb)
 
 # Export
 
-write_rds(fempreg2002, "data/processed/used-in-book/2002FemPrg.Rds")
+write_rds(fempreg2002, "data/processed/used-in-book/2002FemPreg.Rds")
 
 # We do not need to make the MakePregMap() function because the tidyverse makes it easy to perform
 caseid <- 10229

@@ -1,0 +1,41 @@
+---
+title: 'Chapter 3: Probability Mass Functions'
+author: "Ghislain Nono Gueye, Ph.D."
+date: "3/9/2019"
+output: bookdown::pdf_document2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load_packages}
+library(dplyr)
+library(stringr)
+library(purrr)
+```
+
+
+```{r custom_functions}
+compute_avg_size <- function(x){
+	x %>%
+		as.character() %>%
+		str_split(pattern = "-") %>%
+		map(as.numeric) %>%
+		map_dbl(mean)
+}
+
+
+```
+
+
+```{r}
+dat <- tibble(
+	size = c("5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49"),
+	count = c(8, 8, 14, 4, 6, 12, 8, 3, 2)
+)
+	
+
+
+```
+
