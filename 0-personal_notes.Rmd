@@ -1,0 +1,22 @@
+---
+title: 'Chapter 0: Notes about this document'
+author: "Ghislain Nono Gueye, Ph.D."
+date: "3/9/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Why?
+
+# R and Python
+
+# Base R and tidyverse (data.table?)
+
+# Naming conventions
+
+# Graphics
+
+I prefer using `ggplot2`.

@@ -13,8 +13,34 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(stringr)
 library(purrr)
+library(tidyr)
+library(ggplot2)
+
+theme_set(theme_minimal())
 ```
 
+
+# Probability mass functions (Pmfs)
+
+```{r}
+prob_mass_fun <- function(x){
+	df <- as.data.frame(prop.table(table(x)))
+	colnames(df) <- c("value", "probability")
+	df$value <- as.numeric(as.character(df$value))
+	df
+}
+
+prob_mass_fun <- function(x){
+	tibble(value = x) %>%
+		group
+}
+
+prob_mass_fun(c(1, 2, 2, 3, 5))
+
+```
+
+
+# The class size paradox
 
 ```{r custom_functions}
 compute_avg_size <- function(x){
@@ -25,8 +51,8 @@ compute_avg_size <- function(x){
 		map_dbl(mean)
 }
 
-normalize <- function(x, y){
-	product <- x * y
+compute_prob <- function(x){
+	x / sum(x)
 }
 ```
 
@@ -48,5 +74,29 @@ dat <-
 dat
 
 summarize(dat, avg_class_size_dean = sum(prob_dean), avg_class_size_student = sum(prob_student))
+```
+
+
+```{r}
+dat %>%
+	select(-size, -count, -prob_size) %>%
+	mutate_at(.vars = vars(matches("prob")), .funs = compute_prob) %>%
+	gather(key = "prob_type", value = "value", -avg_size) %>%
+	
+ggplot(aes(x = avg_size, y = value, col = prob_type)) +
+	geom_step() +
+	labs(x = "Class size", y = "Probability Mass Functon")
+```
+
+
+```{r}
+# UnBiasPmf
+```
+
+
+# DataFrame indexing
+
+```{r}
+
 ```
 

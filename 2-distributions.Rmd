@@ -18,8 +18,6 @@ library(here)
 library(dplyr)
 library(ggplot2)
 library(forcats)
-
-fempreg2002 <- readRDS(here("data", "processed", "used-in-book", "2002FemPreg.Rds"))
 ```
 
 
@@ -29,8 +27,10 @@ The `table()` function in `R` computes frequencies and its output is a *named ve
 
 # Representing histograms
 
+The `table_to_df()` function takes in a vector of values and outputs a data frame of the values and their frequencies.
+
 ```{r}
-# Similar to the Hist constructor
+# Base R approach
 table_to_df <- function(x){
 	df <- as.data.frame(table(x))
 	colnames(df) <- c("value", "frequency")
@@ -38,97 +38,145 @@ table_to_df <- function(x){
 	df
 }
 
-# Similar to the Freq method
+# Tidyverse approach
+table_to_df <- function(x){
+	tibble(value = x) %>%
+		group_by(value) %>%
+		summarize(frequency = n())
+}
+```
+
+Let's test the function with the following vector called `values`:
+
+```{r}
+values <- c(1, 2, 2, 3, 5)
+table_to_df(values)
+```
+
+Finding the frequency of a specific value can be achieved with the use of the `sum()` function as well as the equality operator (i.e. `==`). Replicating the example in the book:
+
+```{r}
+sum(values == 2)
+sum(values == 4)
+```
+
+There is no real need to wrap this code around a function, but if you really need to:
+
+```{r}
+# Base R approach
 find_freq <- function(x, v){
 	sum(x == v)
 }
 
-x <- c(1, 2, 2, 3, 5)
-table_to_df(x)
-find_freq(x, 2)
-find_freq(x, 4)
+# Tidy approach 
+find_freq <- function(x, v){
+	tibble(values = x) %>%
+		filter(values == v) %>%
+		nrow()
+}
+
+find_freq(values, 2)
+find_freq(values, 4)
 ```
 
-The `unique()` function in `R` serves the same purpose as the `Values()` method and the resulting vector contains sorted values.
+
+The Python `Values()` method used in the book is the same as the `unique()` function in `R`. The main difference is that the R function outputs sorted values.
 
 ```{r}
-unique(x)
+unique(values)
 ```
 
 
 # Plotting histograms
 
-The `hist()` function is used to plot histograms. I personally prefer using `ggplot2` for anything pplot related.
+*Bar charts* (`geom_bar()`) and *histograms* (`geom_histogram()`) look similar, but they have subtle differences (check out this [article](https://www.differencebetween.com/difference-between-bar-graph-and-vs-histogram/)). Even though the visualizations below are histograms in nature, they are actually bar charts because they map specific values on the x-axis to their frequencies on the y-axis. Another hint is that the bars have spaces between them. 
 
 
 # NSFG variables
 
-Selecting records of live births
+The following script imports the dataset in a variable called `fempreg`. Then, the dataset is filtered by live births and the output is stored in `live_births`.
 
 ```{r}
-live_births_data <- fempreg2002 %>%
+fempreg <- readRDS(here("data", "processed", "used-in-book", "2002FemPreg.Rds"))
+
+# Base R approach
+live_births <- fempreg[fempreg$outcome == 1, ]
+
+# Tidy approach
+live_births <- fempreg %>%
 	filter(outcome == 1)
-
-birthwgt_lb_freq <- table_to_df(live_births_data$birthwgt_lb)
-
-ggplot(data = birthwgt_lb_freq, aes(x = value, y = frequency)) +
-	geom_col(fill = "#69789A", col = "#CBD2DD") +
-	theme_classic() +
-	labs(x = "pounds", title = "Pound (lb) portion of birth weights)")
 ```
 
-```{r}
-birthwgt_oz_freq <- table_to_df(live_births_data$birthwgt_oz)
+Now, I make a function, which makes a frequency table (using the `table_to_df()` function) and then makes a corresponding histogram (i.e. actually a bar chart). The function also allows the user to specify plot labels (i.e. x-axis and plot title).
 
-ggplot(data = birthwgt_oz_freq, aes(x = value, y = frequency)) +
+```{r}
+make_histogram <- function(variable, x_label, plot_title){
+	
+	table_to_df(variable) %>%
+	
+	ggplot(aes(x = value, y = frequency)) +
 	geom_col(fill = "#69789A", col = "#CBD2DD") +
 	theme_classic() +
-	labs(x = "pounds", title = "Ounce (oz) portion of birth weights")
+	labs(x = x_label, title = plot_title)
+}
 ```
 
-```{r}
-agepreg_freq <- table_to_df(as.integer(live_births_data$agepreg))
-
-ggplot(data = agepreg_freq, aes(x = value, y = frequency)) +
-	geom_col(fill = "#69789A", col = "#CBD2DD") +
-	theme_classic() +
-	labs(x = "years", title = "Mother's age at the end of pregnancy")
-```
 
 ```{r}
-prglngth_freq <- table_to_df(live_births_data$prglngth)
-
-ggplot(data = prglngth_freq, aes(x = value, y = frequency)) +
-	geom_col(fill = "#69789A", col = "#CBD2DD") +
-	theme_classic() +
-	labs(x = "weeks", title = "Pregnancy length in weeks")
+make_histogram(live_births$birthwgt_lb, x_label = "Pounds", plot_title = "Pound (lb) part of birth weights")
+make_histogram(live_births$birthwgt_oz, x_label = "Ounces", plot_title = "Ounce (oz) part of birth weights")
+make_histogram(as.integer(live_births$agepreg), x_label = "Years", plot_title = "Mother's age at the end of pregnancy")
+make_histogram(live_births$prglngth, x_label = "Weeks", plot_title = "Pregnancy length in weeks")
 ```
 
 
 # Outliers
 
+The `min_n()` and `max_n()` functions are equivalent to the `Smallest` and `Largest` methods. They display the smallest and largent `n` values of a vector.
+
 ```{r}
 min_n <- function(x, n){
-	sort(unique(x))[1:n]
+	head(unique(x), n)
 }
 
 max_n <- function(x, n){
-	sort(unique(x), decreasing = TRUE)[1:n]
+	rev(tail(unique(x), n))
 }
 ```
 
-```{r}
-min_n(live_births_data$prglngth, 10)
 
-table_to_df(live_births_data$prglngth) %>%
-	filter(value >= 43)
+The 10 smallest pregnancy length values:
+
+```{r}
+min_n(live_births$prglngth, 10)
 ```
+
+The 10 largest pregnancy length values:
+
+```{r}
+max_n(live_births$prglngth, 10)
+```
+
+In order to also view the frequencies of the smallest and largest values, the `table_to_df()` function can be used in conjucntion with the `head()` and `tail()` functions.
+
+```{r}
+# 10 largest pregnancy length values and their frequencies
+table_to_df(live_births$prglngth) %>%
+	head(10)
+
+# 10 largest pregnancy length values and their frequencies
+table_to_df(live_births$prglngth) %>%
+	tail(10)
+```
+
+
+The `min_freq_n()` and `max_freq_n()` functions will show the smallest and largest values of a given variable as well as their frequencies in the data set. These functions depend on the `table_to_df()` function:
 
 
 # First babies
 
 ```{r}
-first_or_not <- live_births_data %>%
+first_or_not <- live_births %>%
 	filter(prglngth >= 27 & prglngth <=46) %>%
 	mutate(first_baby = factor(if_else(birthord == 1, "first", "other"))) %>% 
 	group_by(prglngth, first_baby) %>%
